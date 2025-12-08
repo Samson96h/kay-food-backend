@@ -2,18 +2,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
-import { User, UserSecurity, userStatus } from '@app/common/database';
-
+import { User, UserSecurity, MediaFiles, userStatus } from '@app/common/database';
 
 @Injectable()
 export class AppService {
   constructor(
-
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
     @InjectRepository(UserSecurity)
     private readonly securityRepository: Repository<UserSecurity>,
+
+    @InjectRepository(MediaFiles)
+    private readonly mediaRepository: Repository<MediaFiles>,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -23,21 +24,21 @@ export class AppService {
       return { message: 'No user from OAuth provider' };
     }
 
-    const { facebookId, email, firstName, lastName } = req.user;
+    const { facebookId, email, firstName, lastName, picture } = req.user;
 
     let user: User | null = null;
 
     if (facebookId) {
       user = await this.userRepository.findOne({
         where: { facebookId },
-        relations: ['security'],
+        relations: ['security', 'mediaFiles'],
       });
     }
 
     if (!user && email) {
       user = await this.userRepository.findOne({
         where: { email },
-        relations: ['security'],
+        relations: ['security', 'mediaFiles'],
       });
     }
 
@@ -49,11 +50,25 @@ export class AppService {
         facebookId: facebookId || null,
         status: userStatus.ACTIVE,
       });
+
       await this.userRepository.save(user);
 
       const security = this.securityRepository.create({ user });
       await this.securityRepository.save(security);
       user.security = security;
+
+      if (picture) {
+        const media = this.mediaRepository.create({
+          path: picture,
+          size: 0,
+          meta: { provider: 'oauth' },
+        });
+
+        await this.mediaRepository.save(media);
+
+        user.mediaFiles = [media];
+        await this.userRepository.save(user);
+      }
     }
 
     const payload = {
@@ -62,6 +77,7 @@ export class AppService {
       firstName,
       lastName,
     };
+
     const jwt = this.jwtService.sign(payload, { expiresIn: '1d' });
 
     return {
