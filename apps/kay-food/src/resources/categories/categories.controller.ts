@@ -1,6 +1,6 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 
-import { AuthGuard } from '@app/common';
+import { AuthGuard, GetLang } from '@app/common';
 import { CategoriesService } from './categories.service';
 import { IdDTO } from '@app/common';
 
@@ -10,15 +10,16 @@ import { IdDTO } from '@app/common';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) { }
 
-  @Get(':id')
-  findOne(@Param() param: IdDTO) {
-    return this.categoriesService.findOne(param.id);
+  @Get()
+  findAll(@GetLang() lang: string) {
+    return this.categoriesService.findAll(lang);
   }
 
-  @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  @Get(':id')
+  findOne(@Param() param: IdDTO, @GetLang() lang: string) {
+    return this.categoriesService.findOne(param.id, lang);
   }
+
 
 
 }

@@ -57,8 +57,11 @@ export class CategoriesService {
         path: filePath,
         size: file.size,
       });
+
       await this.s3Service.putObject(file.buffer, filePath, file.mimetype);
-      photoEntities.push(photoEntity);
+
+      const savedPhoto = await this.mediaRepository.save(photoEntity);
+      photoEntities.push(savedPhoto);
     }
 
     const category = this.categoryRepository.create({

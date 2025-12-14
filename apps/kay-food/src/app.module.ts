@@ -6,6 +6,7 @@ import { join } from 'path';
 
 import { User, Product, Order, Category, SecretCode, MediaFiles, Ingredient, OrderItem, Zone, Admins, Language, ProductTranslate, CategoryTranslate, IngredientTranslate, UserSecurity } from '@app/common/database';
 import { jwtConfig, dbConfig, awsConfig, googleClientConfig } from '../../../libs/common/src/configs';
+import { faceboockClientConfig } from '@app/common/configs/faceboock-client.config';
 import { CategoriesModule } from './resources/categories/categories.module';
 import { validationSchema } from '../../../libs/common/src/validation';
 import { ProductsModule } from './resources/products/products.module';
@@ -17,7 +18,7 @@ import { S3Module } from '@app/common/shared/s3/s3.module';
 import { AuthModule } from './resources/auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { faceboockClientConfig } from '@app/common/configs/faceboock-client.config';
+import { LanguageInterceptor } from '@app/common/interceptors/language.interceptor';
 
 
 @Module({
@@ -59,7 +60,7 @@ import { faceboockClientConfig } from '@app/common/configs/faceboock-client.conf
     S3Module
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, LanguageInterceptor],
 })
 export class AppModule  {
   }

@@ -9,13 +9,10 @@ export class AppService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
     @InjectRepository(UserSecurity)
     private readonly securityRepository: Repository<UserSecurity>,
-
     @InjectRepository(MediaFiles)
     private readonly mediaRepository: Repository<MediaFiles>,
-
     private readonly jwtService: JwtService,
   ) {}
 

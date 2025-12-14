@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 import { Category } from '@app/common/database';
@@ -13,12 +13,41 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<Category>,
   ) { }
 
-  findAll() {
-    return this.categoryRepository.find()
+
+  async findAll(lang: string) {
+    const categories = await this.categoryRepository.find({
+      relations: ['translations',
+        'translations.language',
+        'mediaFiles', 'children'],
+    });
+
+    return categories.map(c => ({
+      ...c,
+      translations: c.translations.find(t => t.language.name === lang),
+    }));
+
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+
+  async findOne(id: number, lang: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: ['translations',
+        'translations.language',
+        'mediaFiles', 'children'],
+    });
+
+    if (!category) {
+      throw new NotFoundException('category not found');
+    }
+
+    const translation = category.translations.find(t => t.language.name === lang);
+
+    return {
+      ...category,
+      translations: translation,
+    };
   }
+
 
 }

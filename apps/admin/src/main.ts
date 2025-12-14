@@ -6,6 +6,9 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@app/common/filters/exception.filter';
 import { User } from '@app/common/database/entities';
 import { Request } from 'express';
+import { LanguageInterceptor } from '@app/common/interceptors/language.interceptor';
+
+
 
 if (typeof globalThis.crypto === 'undefined') {
   // @ts-ignore
@@ -20,7 +23,6 @@ const PORT = process.env.PORT_ADMIN || 3001;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
@@ -32,7 +34,6 @@ async function bootstrap() {
 
   await app.listen(PORT);
   console.log(`App running on port ${PORT}`);
-  // const bcrypt = require('bcrypt');
 
 }
 

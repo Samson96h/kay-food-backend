@@ -7,6 +7,7 @@ import { User } from '../../../libs/common/src/database/entities';
 import { AppModule } from './app.module';
 import { webcrypto } from 'crypto';
 import { Request } from 'express';
+import { LanguageInterceptor } from '@app/common/interceptors/language.interceptor';
 
 if (typeof globalThis.crypto === 'undefined') {
   // @ts-ignore
@@ -17,12 +18,13 @@ if (typeof globalThis.crypto === 'undefined') {
 export interface AuthRequest extends Request {
   user: User;
 }
-console.log('usersssss')
 const PORT = process.env.PORT || 3001
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)),
+  app.get(LanguageInterceptor)
+);
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,

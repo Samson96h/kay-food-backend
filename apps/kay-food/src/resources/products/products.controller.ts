@@ -1,7 +1,7 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 
 import { ProductsService } from './products.service';
-import { AuthGuard } from '@app/common'
+import { AuthGuard, GetLang } from '@app/common'
 import { IdDTO } from '@app/common';
 
 
@@ -11,17 +11,18 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @Get('ingredient')
-  async getAllIngredients() {
-    return this.productsService.getAllIngredient()}
-
-  @Get(':id')
-  async findOne(@Param() param: IdDTO) {
-    return this.productsService.findOne(param.id);
+  async getAllIngredients(@GetLang() lang: string) {
+    return this.productsService.getAllIngredient(lang)
   }
 
   @Get()
-  async findAll() {
-    return this.productsService.findAll()
+  async findAll(@GetLang() lang: string) {
+    return this.productsService.findAll(lang);
+  }
+
+  @Get(':id')
+  async findOne(@Param() param: IdDTO, @GetLang() lang: string) {
+    return this.productsService.findOne(param.id, lang);
   }
 
 }

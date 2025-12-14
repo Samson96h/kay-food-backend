@@ -2,22 +2,25 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 
-import { User, Product, Order, Category, SecretCode, MediaFiles, Ingredient, OrderItem, Zone, Admins, ProductTranslate, Language, CategoryTranslate } from '@app/common/database/entities';
+import { User, Product, Order, Category, SecretCode, MediaFiles, Ingredient, OrderItem, Zone, Admins, ProductTranslate, Language, CategoryTranslate, UserSecurity } from '@app/common/database/entities';
 import { AdminModule } from './resources/admins/admin.module';
 import { IDBConfig } from '@app/common/models';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { awsConfig, dbConfig } from '@app/common/configs';
+import { awsConfig, dbConfig, googleClientConfig, jwtConfig } from '@app/common/configs';
 import { CategoriesModule } from './resources/categories/categories.module';
 import { ProductsModule } from './resources/products/products.module';
 import { OrdersModule } from './resources/orders/orders.module';
 import { ZonesModule } from './resources/zones/zones.module';
 import { UsersModule } from './resources/users/users.module';
-import { AppController } from 'apps/kay-food/src/app.controller';
-import { AppService } from 'apps/kay-food/src/app.service';
 import { GlobalJwtModule } from './global-jwt.module';
 import { IngredientTranslate } from '@app/common/database/entities/ingredient-translate.entity';
 import { S3Module } from '@app/common/shared/s3/s3.module';
+import { validationSchema } from '@app/common';
+import { AppService } from './app.service';
+import { faceboockClientConfig } from '@app/common/configs/faceboock-client.config';
+import { AppController } from './app.controller';
+import { LanguageInterceptor } from '@app/common/interceptors/language.interceptor';
 
 @Module({
   imports: [
@@ -35,8 +38,9 @@ import { S3Module } from '@app/common/shared/s3/s3.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: validationSchema,
       envFilePath: join(__dirname, '../../../../.env'),
-      load: [dbConfig, awsConfig],
+      load: [dbConfig, awsConfig, jwtConfig, googleClientConfig, faceboockClientConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -67,7 +71,8 @@ import { S3Module } from '@app/common/shared/s3/s3.module';
             ProductTranslate,
             Language,
             CategoryTranslate,
-            IngredientTranslate
+            IngredientTranslate,
+            UserSecurity
           ],
           synchronize: true,
         };
@@ -77,4 +82,4 @@ import { S3Module } from '@app/common/shared/s3/s3.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
