@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Language, Languages } from '../database';
 import { Repository } from 'typeorm';
 
-
 @Injectable()
 export class LanguageInterceptor implements NestInterceptor {
   private readonly defaultLang = Languages.ENGLISH;
@@ -21,19 +20,30 @@ export class LanguageInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler) {
     const request = context.switchToHttp().getRequest();
 
-    let lang =
-      request.headers['x-lang'] ||
-      request.headers['accept-language'] ||
-      this.defaultLang;
+    const rawLang =
+      request.headers['x-lang'] ??
+      request.headers['accept-language'];
 
-    lang = String(lang).toUpperCase();
+    const lang = this.normalizeLanguage(rawLang);
 
-    const found = await this.languageRepository.findOne({
-      where: { name: lang as Languages },
+    const languageEntity = await this.languageRepository.findOne({
+      where: { name: lang },
     });
 
-    request.lang = found ? found.name : this.defaultLang;
+    request.lang = languageEntity?.name ?? this.defaultLang;
 
     return next.handle();
+  }
+
+  private normalizeLanguage(raw?: string): Languages {
+    if (!raw) {
+      return this.defaultLang;
+    }
+
+    const normalized = raw.toUpperCase();
+
+    return Object.values(Languages).includes(normalized as Languages)
+      ? (normalized as Languages)
+      : this.defaultLang;
   }
 }
